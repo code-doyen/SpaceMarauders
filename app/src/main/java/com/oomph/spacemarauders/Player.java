@@ -17,6 +17,10 @@ public class Player {
     private int x;
     private int y;
 
+    //how long and high our ship will be
+    private float length;
+    private float height;
+
     //motion speed of the character
     private int speed = 0;
 
@@ -26,9 +30,12 @@ public class Player {
     //Gravity Value to add gravity effect on the ship
     private final int GRAVITY = -10;
 
-    //Controlling Y coordinate so that ship won't go outside the screen
+    //Controlling X and Y coordinate so that ship won't go outside the screen
     private int maxY;
     private int minY;
+    private int maxX;
+    private int minX;
+
 
     //Limit the bounds of the ship's speed
     private final int MIN_SPEED = 1;
@@ -39,18 +46,29 @@ public class Player {
 
     //constructor
     public Player(Context context, int screenX, int screenY) {
-        x = 75;
-        y = 50;
+        //scales the ship
+        length = screenX/20;
+        height = screenY/20;
+
+        // Start ship in roughly the screen centre
+        x = screenX / 2;
+        y = screenY - 120;
         speed = 1;
 
         //Getting bitmap from drawable resource
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.player);
+        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.mship1);
+        //stretch the bitmap to a size appropriate for the screen resolution
+        bitmap = Bitmap.createScaledBitmap(bitmap, (int)length, (int)height,false);
 
         //calculating maxY
         maxY = screenY - bitmap.getHeight();
 
-        //top edge's y point is 0 so min y will always be zero
+        //calculating maxX
+        maxX = screenX - bitmap.getWidth();
+
+        //top edge's x and y point is 0 so min x and y will always be zero
         minY = 0;
+        minX = 0;
 
         //setting the boosting value to false initially
         boosting = false;
@@ -77,10 +95,10 @@ public class Player {
         //if the ship is boosting
         if (boosting) {
             //speeding up the ship
-            speed += 2;
+            speed += 1;
         } else {
             //slowing down if not boosting
-            speed -= 5;
+            speed -= 1;
         }
         //controlling the top speed
         if (speed > MAX_SPEED) {
@@ -93,14 +111,23 @@ public class Player {
         }
 
         //moving the ship down
-        y -= speed + GRAVITY;
+        //y -= speed + GRAVITY;
+
+        //moving the ship across
+        x -= speed + GRAVITY;
 
         //but controlling it also so that it won't go off the screen
-        if (y < minY) {
-            y = minY;
+//        if (y < minY) {
+//            y = minY;
+//        }
+//        if (y > maxY) {
+//            y = maxY;
+//        }
+        if (x < minX) {
+            x = minX;
         }
-        if (y > maxY) {
-            y = maxY;
+        if (x > maxX) {
+            x = maxX;
         }
 
         //adding top, left, bottom and right to the rect object
@@ -112,7 +139,7 @@ public class Player {
     }
 
     /*
-    * These are getters you can generate it autmaticallyl
+    * These are getters you can generate it automatically
     * right click on editor -> generate -> getters
     * */
 
