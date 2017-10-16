@@ -18,8 +18,8 @@ public class Player {
     private int y;
 
     //how long and high our ship will be
-    private float length;
-    private float height;
+    private int length;
+    private int height;
 
     //motion speed of the character
     private int speed = 0;
@@ -158,6 +158,10 @@ public class Player {
 
     public int getY() {
         return y;
+    }
+
+    public int getLength(){
+        return length;
     }
 
     public int getSpeed() {

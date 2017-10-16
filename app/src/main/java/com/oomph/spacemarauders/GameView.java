@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.media.MediaPlayer;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -37,24 +38,36 @@ public class GameView extends SurfaceView implements Runnable {
     private Canvas canvas;
     private SurfaceHolder surfaceHolder;
 
+    //Adding 30 enemies you may increase the size
+    private int enemyCount = 30;
+
     //Adding enemies object array
     private Enemy[] enemies;
 
-    //created a reference of the class Friend
-    private Friend friend;
+    // The player's bullet
+    private Bullet bullet;
 
-    //Adding 3 enemies you may increase the size
-    private int enemyCount = 1;
+    // The enemies bullets
+    private Bullet[] enemiesBullets = new Bullet[200];
+    private int nextBullet;
+    private int maxEnemiesBullets = 10;
+
+    // The player's shelters are built from bricks
+    private DefenceBrick[] bricks = new DefenceBrick[400];
+    private int numBricks;
+
+    //created a reference of the class Friend
+//    private Friend friend;
 
     //Adding an stars list
-    private ArrayList<Stars> stars = new ArrayList<Stars>();
+    private ArrayList<Stars> stars = new ArrayList<>();
 
     //defining a boom object to display blast
     private Boom boom;
 
-    //a screenX holder
+    //a screenX/Y holder
     int screenX;
-
+    int screenY;
     //to count the number of Misses
     int countMisses;
 
@@ -65,7 +78,10 @@ public class GameView extends SurfaceView implements Runnable {
     private boolean isGameOver ;
 
     //the score holder
-    int score;
+    private int score;
+
+    // Lives
+    private int lives = 3;
 
     //the high Scores Holder
     int highScore[] = new int[4];
@@ -77,6 +93,7 @@ public class GameView extends SurfaceView implements Runnable {
     static MediaPlayer gameOnsound;
     final MediaPlayer killedEnemysound;
     final MediaPlayer gameOversound;
+    final MediaPlayer shootSound;
 
     //Class constructor
     public GameView(Context context, int screenX, int screenY) {
@@ -88,6 +105,15 @@ public class GameView extends SurfaceView implements Runnable {
         //initializing player object
         //this time also passing screen size to player constructor
         player = new Player(context, screenX, screenY);
+
+        // Prepare the players bullet
+        bullet = new Bullet(context, screenX, screenY);
+        // Initialize the enemiesBullets array
+        for(int i=0; i < enemiesBullets.length; i++){
+            enemiesBullets[i] = new Bullet(context, screenX, screenY);
+        }
+        //intializing enemy object array
+        enemies = new Enemy[enemyCount];
 
         //initializing drawing objects
         surfaceHolder = getHolder();
@@ -101,19 +127,34 @@ public class GameView extends SurfaceView implements Runnable {
         }
 
         //initializing enemy object array
-        enemies = new Enemy[enemyCount];
-        for(int i=0; i<enemyCount; i++){
-            enemies[i] = new Enemy(context, screenX, screenY);
+        int numInvaders = 0;
+        for(int column =0; column < 6; column++){
+            for(int row = 0; row<5; row++){
+                enemies[numInvaders] = new Enemy(context, row, column, screenX, screenY);
+                numInvaders++;
+            }
         }
-
+        // Build the shelters
+        numBricks = 0;
+        for(int shelterNumber =0; shelterNumber < 4; shelterNumber++){
+            for(int column = 0; column < 8; column++){
+                for(int row = 0; row < 3; row++){
+                    bricks[numBricks] = new DefenceBrick(row, column, shelterNumber, screenX, screenY);
+                    numBricks++;
+                }
+            }
+        }
+        // Reset the menace level
+        //menaceInterval = 1000;
         //initializing boom object
         boom = new Boom(context);
 
         //initializing the Friend class object
-        friend = new Friend(context, screenX, screenY);
+        //friend = new Friend(context, screenX, screenY);
 
         //initializing screenX holder
         this.screenX = screenX;
+        this.screenY = screenY;
 
         //initializing count the number of Misses
         countMisses = 0;
@@ -136,7 +177,7 @@ public class GameView extends SurfaceView implements Runnable {
         gameOnsound = MediaPlayer.create(context,R.raw.gameon);
         killedEnemysound = MediaPlayer.create(context,R.raw.killedenemy);
         gameOversound = MediaPlayer.create(context,R.raw.gameover);
-
+        shootSound = MediaPlayer.create(context, R.raw.shoot);
         //starting the game music as the game starts
         gameOnsound.start();
     }
@@ -145,7 +186,8 @@ public class GameView extends SurfaceView implements Runnable {
     public void run() {
         while (playing) {
             //to update the frame
-            update();
+            if(playing)
+                update();
 
             //to draw the frame
             draw();
@@ -157,13 +199,21 @@ public class GameView extends SurfaceView implements Runnable {
 
 
     private void update() {
+        // Did an invader bump into the side of the screen
+        boolean bumped = false;
+
         //incrementing score as time passes
         score++;
 
         //updating player position
         player.update();
 
-        //setting boom outside the screen
+        // Update the players bullet
+        if(bullet.getStatus()){
+            bullet.update();
+        }
+
+        //setting boom outside the screenat
         boom.setX(-250);
         boom.setY(-250);
 
@@ -172,109 +222,168 @@ public class GameView extends SurfaceView implements Runnable {
             s.update(player.getSpeed());
         }
 
-        //updating the enemy coordinate with respect to player speed
-        for(int i=0; i<enemyCount; i++) {
-            //setting the flag true when the enemy just enters the screen
-            if(enemies[i].getX()==screenX){
-                flag = true;
-            }
-            enemies[i].update(player.getSpeed());
-            //if collision occurs with player
-            if (Rect.intersects(player.getDetectCollision(), enemies[i].getDetectCollision())) {
-                //displaying boom at that location
-                boom.setX(enemies[i].getX());
-                boom.setY(enemies[i].getY());
+        for(int i = 0; i < enemiesBullets.length; i++){
+            // Update all the invaders bullets if active
+            if(enemiesBullets[i].getStatus()) {
+                enemiesBullets[i].update();
 
-                //will play a sound at the collision between player and the enemy
-                killedEnemysound.start();
-
-                //moving enemy outside the left edge
-                enemies[i].setX(-200);
-            }// the condition where player misses the enemy
-            else {
-                //if the enemy has just entered
-                if (flag) {
-                    //if player's x coordinate is more than the enemies's x coordinate.i.e. enemy has just passed across the player
-                    if (player.getDetectCollision().exactCenterX() >= enemies[i].getDetectCollision().exactCenterX()) {
-                        //increment countMisses
-                        countMisses++;
-
-                        //setting the flag false so that the else part is executed only when new enemy enters the screen
-                        flag = false;
-                        //if no of Misses is equal to 3, then game is over.
-                        if (countMisses == 3) {
-                            //setting playing false to stop the game.
-                            playing = false;
-                            isGameOver = true;
-
-                            //stopping the gameon music
-                            gameOnsound.stop();
-                            //play the game over sound
-                            gameOversound.start();
-
-                            //Assigning the scores to the highscore integer array
-                            for(int j=0; j<4;j++){
-                                if(highScore[j]<score){
-
-                                    final int finalI = j;
-                                    highScore[j] = score;
-                                    break;
-                                }
+                for(int j=0; j< numBricks; j++){
+                    // Has an alien bullet hit a shelter brick
+                    if(bricks[j].getInvisibility()){
+                        if(Rect.intersects(enemiesBullets[i].getDetectCollision(), bricks[j].getRect())){
+                            //A collision has occured
+                            enemiesBullets[i].setInactive();
+                            bricks[j].setInvisible();
+                            //soundPool.play(damageShelterID, 1, 1, 0, 0, 1);
+                        }
+                        // Has a player bullet hit a shelter brick
+                        if(bullet.getStatus()) {
+                            if (Rect.intersects(bullet.getDetectCollision(), bricks[j].getRect())) {
+                                // a collision has occured
+                                bullet.setInactive();
+                                bricks[j].setInvisible();
+                          //      soundPool.play(damageShelterID, 1, 1, 0, 0, 1);
                             }
-
-                            //storing the scores through shared Preferences
-                            SharedPreferences.Editor e = sharedPreferences.edit();
-                            for(int k=0;k<4;k++){
-                                int j = k+1;
-                                e.putInt("score"+j,highScore[k]);
-                            }
-                            e.apply();
-
                         }
                     }
                 }
             }
+            // Has an invaders bullet hit the bottom of the screen
+            if(enemiesBullets[i].getImpactPointY() >screenY){
+                enemiesBullets[i].setInactive();
+            }
         }
-        //updating the friend ships coordinates
-        friend.update(player.getSpeed());
-
-        //checking for a collision between player and a friend
-        if(Rect.intersects(player.getDetectCollision(),friend.getDetectCollision())){
-
-            //displaying the boom at the collision
-            boom.setX(friend.getX());
-            boom.setY(friend.getY());
-            //setting playing false to stop the game
-            playing = false;
-            //setting the isGameOver true as the game is over
-            isGameOver = true;
-
-            //stopping the gameon music
-            gameOnsound.stop();
-            //play the game over sound
-            gameOversound.start();
-
-            //Assigning the scores to the highscore integer array
-            for(int i=0;i<4;i++){
-                if(highScore[i]<score){
-
-                    final int finalI = i;
-                    highScore[i] = score;
-                    break;
+        // Has a player bullet hit a shelter brick
+        if(bullet.getStatus()){
+            for(int i = 0; i < numBricks; i++){
+                if(bricks[i].getInvisibility()){
+                    if(Rect.intersects(bullet.getDetectCollision(), bricks[i].getRect())){
+                        // a collision has occured
+                        bullet.setInactive();
+                        bricks[i].setInvisible();
+                     //   soundPool.play(damageShelterID, 1, 1, 0, 0, 1);
+                    }
                 }
             }
-
-            //storing the scores through shared Preferences
-            SharedPreferences.Editor e = sharedPreferences.edit();
-            for(int i=0;i<4;i++){
-                int j = i+1;
-                e.putInt("score"+j,highScore[i]);
+        }
+        // Update the invaders if visible
+        for(int i = 0; i < enemyCount; i++){
+            if(enemies[i].getVisibility()){
+                //move the next invader
+                enemies[i].update();
+                //attempt a shot
+                if(enemies[i].takeAim(player.getX(), player.getLength())){
+                    //try to spawn bullet
+                    if(enemiesBullets[nextBullet].shoot(enemies[i].getX() + enemies[i].getlength() /2,
+                            enemies[i].getY(), bullet.DOWN)){
+                        //Shot fired, prepare next shot
+                        nextBullet++;
+                        //loop back to the first one if we have reached the last
+                        if(nextBullet == maxEnemiesBullets){
+                            //This stops the firing of another bullet until one completes its journey
+                            //Because if bullet 0 is still alive active shoot returns false
+                            nextBullet = 0;
+                        }
+                    }
+                }
+                // If move cause them to bump the screen change bumped to true
+                if(enemies[i].getX() > screenX - enemies[i].getlength() || enemies[i].getX() < 0){
+                    bumped = true;
+                }
             }
-            e.apply();
+        }
+        // Did an invader bump into the edge of the screen
+        if(bumped){
+            //move all the invaders down and change direction
+            for(int i = 0; i < enemyCount; i++){
+                enemies[i].dropDownAndReverse();
+                //have the invaders landed
+                if(enemies[i].getY() > screenY - screenY /10){
+                    isGameOver = true;
+                }
+            }
+            //increase the menace sound level by making the sounds more frequent
+//            menaceInterval -= 80;
+        }
 
+//        if(lost){
+//            prepareLevel();
+//        }
+
+        // Has the player's bullet hit the top of the screen
+        if(bullet.getImpactPointY() < 0){
+            bullet.setInactive();
+        }
+
+        // Has the player's bullet hit an invader
+        if(bullet.getStatus()){
+            for(int i = 0; i < enemyCount; i++){
+                if(enemies[i].getVisibility()){
+                    if(Rect.intersects(bullet.getDetectCollision(), enemies[i].getDetectCollision())){
+                        enemies[i].setInvisible();
+                      //  soundPool.play(invaderExplodeID, 1, 1, 0, 0, 1);
+                        bullet.setInactive();
+                        score += 10;
+                        //has player won
+//                        if(score == numInvaders * 10){
+//                            paused =true;
+//                            score = 0;
+//                            lives =3;
+//                            prepareLevel();
+//                        }
+                    }
+                }
+            }
         }
 
 
+        // Has an invader bullet hit the player ship buggy!!!!
+        for(int i =0; i < enemiesBullets.length; i++){
+            if(enemiesBullets[i].getStatus()){
+                if(Rect.intersects(player.getDetectCollision(),enemiesBullets[i].getDetectCollision())){
+                    enemiesBullets[i].setInactive();
+                    //displaying boom at that location
+                    boom.setX(enemies[i].getX());
+                    boom.setY(enemies[i].getY());
+                    //will play a sound at the collision between player and the enemy
+                    killedEnemysound.start();
+                    lives--;
+                   // soundPool.play(playerExplodeID, 1, 1, 0, 0, 1);
+                    // is the game over
+//                    if(lives == 0){
+//                        paused = true;
+//                        lives =3;
+//                        score = 0;
+//                        prepareLevel();
+//                    }
+                }
+            }
+        }
+//           // the condition where player misses the enemy
+//            else {
+//                //stopping the gameon music
+//                gameOnsound.stop();
+//                //play the game over sound
+//                gameOversound.start();
+//
+//                //Assigning the scores to the highscore integer array
+//                for (int j = 0; j < 4; j++) {
+//                    if (highScore[j] < score) {
+//
+//                        final int finalI = j;
+//                        highScore[j] = score;
+//                        break;
+//                    }
+//                }
+//
+//                //storing the scores through shared Preferences
+//                SharedPreferences.Editor e = sharedPreferences.edit();
+//                for (int k = 0; k < 4; k++) {
+//                    int j = k + 1;
+//                    e.putInt("score" + j, highScore[k]);
+//                }
+//                e.apply();
+//            }
     }
 
     private void draw() {
@@ -307,14 +416,37 @@ public class GameView extends SurfaceView implements Runnable {
 
             //drawing the enemies
             for (int i = 0; i < enemyCount; i++) {
-                canvas.drawBitmap(
-                        enemies[i].getBitmap(),
-                        enemies[i].getX(),
-                        enemies[i].getY(),
-                        paint
-                );
+                if(enemies[i].getVisibility()){
+                    //if(uhOrOh)
+                        canvas.drawBitmap(enemies[i].getBitmap(), enemies[i].getX(), enemies[i].getY(), paint);
+                    //else
+                    //  canvas.drawBitmap(enemies[i].getBitmap2(), enemies[i].getX(), enemies[i].getY(), paint);
+                }
+            }
+            // Draw the bricks if visible
+            for(int i = 0; i < numBricks; i++){
+                if(bricks[i].getInvisibility()){
+                    canvas.drawRect(bricks[i].getRect(), paint);
+                }
+            }
+            // Draw the players bullet if active
+            if(bullet.getStatus()){
+                //canvas.drawRect(bullet.getRect(), paint);
+                canvas.drawBitmap(bullet.getBitmap(), bullet.getX(), bullet.getY(), paint);
             }
 
+            // Draw the invaders bullets if active
+            for(int i = 0; i < enemiesBullets.length; i++){
+                if(enemiesBullets[i].getStatus()){
+                    //canvas.drawRect(invadersBullets[i].getRect(), paint);
+                    canvas.drawBitmap(enemiesBullets[i].getBitmap(), enemiesBullets[i].getX(), enemiesBullets[i].getY(), paint);
+                }
+            }
+
+            // Change the brush color, Draw the score and remaining lives
+            paint.setColor(Color.argb(255,  249, 129, 0));
+            paint.setTextSize(40);
+            canvas.drawText("Score: " + score + "   Lives: " + lives, 10,50, paint);
             //drawing boom image
             canvas.drawBitmap(
                     boom.getBitmap(),
@@ -324,13 +456,13 @@ public class GameView extends SurfaceView implements Runnable {
             );
 
             //drawing friends image
-            canvas.drawBitmap(
-
-                    friend.getBitmap(),
-                    friend.getX(),
-                    friend.getY(),
-                    paint
-            );
+//            canvas.drawBitmap(
+//
+//                    friend.getBitmap(),
+//                    friend.getX(),
+//                    friend.getY(),
+//                    paint
+//            );
 
             //draw game Over when the game is over
             if(isGameOver){
@@ -391,6 +523,11 @@ public class GameView extends SurfaceView implements Runnable {
                 //When the user releases the screen
                 //boosting the space jet when screen is pressed
                 player.setBoosting();
+                //player's shot(s) fired
+                if(bullet.shoot(player.getX()+player.getLength()/2, screenY, bullet.UP)){
+                  //  soundPool.play(shootID, 1, 1, 0, 0, 1);
+                    shootSound.start();
+                }
                 break;
         }
         //if the game's over, tappin on game Over screen sends you to MainActivity
