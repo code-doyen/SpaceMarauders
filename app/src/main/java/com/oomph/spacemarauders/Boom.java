@@ -7,17 +7,14 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-/**
- * Created by Belal on 6/15/2016.
- */
 public class Boom {
 
     //bitmap object
     private Bitmap bitmap;
 
     //coordinate variables
-    private int x;
-    private int y;
+    private float x;
+    private float y;
 
     //constructor
     public Boom(Context context) {
@@ -34,11 +31,11 @@ public class Boom {
     }
 
     //setters for x and y to make it visible at the place of collision
-    public void setX(int x) {
+    public void setX(float x) {
         this.x = x;
     }
 
-    public void setY(int y) {
+    public void setY(float y) {
         this.y = y;
     }
 
@@ -51,11 +48,11 @@ public class Boom {
         this.bitmap = bitmap;
     }
 
-    public int getX() {
+    public float getX() {
         return x;
     }
 
-    public int getY() {
+    public float getY() {
         return y;
     }
 

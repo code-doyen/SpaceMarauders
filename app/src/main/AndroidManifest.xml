@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-package="com.oomph.spacemarauders">
+    package="com.oomph.spacemarauders">
 
 <application
     android:allowBackup="true"
@@ -19,6 +19,8 @@ package="com.oomph.spacemarauders">
     <activity android:name=".GameActivity"
         android:screenOrientation="landscape"/>
     <activity android:name=".HighScoreActivity"
+        android:screenOrientation="landscape"/>
+    <activity android:name=".SaveScoreActivity"
         android:screenOrientation="landscape"/>
 </application>
 

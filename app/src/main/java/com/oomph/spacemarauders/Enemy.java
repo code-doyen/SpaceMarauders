@@ -2,33 +2,39 @@ package com.oomph.spacemarauders;
 
 /**
  * Created by david on 9/19/2017.
- */
+ **/
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Rect;
+
+import android.graphics.RectF;
+import android.util.Log;
 
 import java.util.Random;
 
 public class Enemy {
-    Random generator = new Random();
+    private Random generator = new Random();
     //bitmap for the enemy
     //we have already pasted the bitmap in the drawable folder
     private Bitmap bitmap;
     private Bitmap bitmap2;
 
     //how long and high our invaders will be
-    private int length;
+    private int width;
     private int height;
 
     //x and y coordinates
-    private int x;
-    private int y;
+    private float x;
+    private float y;
 
     //enemy speed
     private float speed;
 
+    //Gravity Value to add gravity effect on the ship
+    private final float GRAVITY = 9.8f;
+
+    private float newHeight;
     //min and max coordinates to keep the enemy inside the screen
     private int maxX;
     private int minX;
@@ -36,41 +42,39 @@ public class Enemy {
     private int maxY;
     private int minY;
 
-    //This will hold the pixels per second speed that the invader will move
-    //private float shipSpeed;
 
-    public final int LEFT = 1;
-    public final int RIGHT = 2;
+    private final int LEFT = 1;
+    private final int RIGHT = 2;
 
     //is the ship moving and in which direction
     private int shipMoving = RIGHT;
 
     //has enemy been destroyed
-    boolean isVisible;
+    private boolean isVisible;
 
     //creating a rect object
-    private Rect detectCollision;
+    private RectF detectCollision;
 
     public Enemy(Context context, int row, int column, int screenX, int screenY) {
 
 
         //getting bitmap from drawable resource
-        length = screenX/20;
+        width = screenX/20;
         height = screenY/20;
         isVisible = true;
 
-        int padding =screenX /25;
-        x = column * (length+padding);
-        y = row * (length + padding/4);
+        int padding =20;
+        x = column * (width+padding);
+        y = row * (height + padding) +51;
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.roundysh);
         bitmap2 = BitmapFactory.decodeResource(context.getResources(), R.drawable.aliensh);
 
         //stretch the first bitmap to a size appropriate for the screen resolution
-        bitmap = Bitmap.createScaledBitmap(bitmap, length, height, false);
-        bitmap2 = Bitmap.createScaledBitmap(bitmap2, length, height, false);
+        bitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
+        bitmap2 = Bitmap.createScaledBitmap(bitmap2, width, height, false);
 
         //how fast is the invader in pixels per second
-        speed = 2.5f;
+        speed = 10;
         //initializing min and max coordinates
         maxX = screenX;
         maxY = screenY;
@@ -82,22 +86,32 @@ public class Enemy {
         //speed = generator.nextInt(6) + 10;
        // x = screenX;
         //y = generator.nextInt(maxY) - bitmap.getHeight();
-
+        newHeight = y;
         //initializing rect object
-        detectCollision = new Rect(x, y, bitmap.getWidth(), bitmap.getHeight());
+        detectCollision = new RectF(x, y, x+ width, y+height);
     }
 
-    public void update() {
+    public void update(long fps) {
         //decreasing x coordinate so that enemy will move right to left
         //x -= playerSpeed;
         //x -= speed;
 
         //if the enemy reaches the left edge
         if(shipMoving == LEFT){
-            x -= speed;
+            if(y < newHeight){
+                y += 0.5f * (speed * GRAVITY) / fps;
+            }else {
+                x -= 0.5f * (speed * GRAVITY) / fps;
+                newHeight = y;
+            }
         }
         if(shipMoving == RIGHT){
-            x += speed;
+            if(y < newHeight){
+                y += 0.5f * (speed * GRAVITY) / fps;
+            }else {
+                x += 0.5f * (speed * GRAVITY) / fps;
+                newHeight = y;
+            }
         }
 
         //Adding the top, left, bottom and right to the rect object
@@ -107,20 +121,27 @@ public class Enemy {
         detectCollision.bottom = y + bitmap.getHeight();
 
     }
-    public void dropDownAndReverse(){
+    public void dropDownAndReverse(long fps){
+        Log.i(getClass().getName(), " AlienX colliding: "+x);
         if(shipMoving ==LEFT){
             shipMoving = RIGHT;
+            x += 0.5f * (speed * GRAVITY) / fps;
         }
-        else
+        else {
             shipMoving = LEFT;
-        y += height;
-        speed *= 1.18f;
+            x -= 0.5f * (speed * GRAVITY) / fps;
+        }
+        if(y == newHeight) {
+            newHeight += height;
+            //y += height;
+            speed *= 1.18f;
+        }
     }
 
 
 
     //one more getter for getting the rect object
-    public Rect getDetectCollision() {
+    public RectF getDetectCollision() {
         return detectCollision;
     }
 
@@ -133,45 +154,41 @@ public class Enemy {
         return bitmap2;
     }
 
-    public int getX() {
+    public float getX() {
         return x;
     }
 
-    public int getY() {
+    public float getY() {
         return y;
     }
 
-    //public int getSpeed() {
-    //    return speed;
-    //}
+
     public void setInvisible(){
         isVisible = false;
     }
-    public Boolean getVisibility(){
+    public Boolean isVisible(){
         return isVisible;
     }
 
-    public int getlength(){
-        return length;
+    public float getLength(){
+        return width;
+    }
+    public int getHeight() {
+        return height;
     }
 
-    public boolean takeAim(float playerShipX, float playerSHipLength) {
-        int randomNum = -1;
+    public boolean takeAim(float playerShipX, float playerShipLength) {
         // if near the player
-        if ((playerShipX + playerSHipLength > x
-                && playerShipX + playerSHipLength < x + length)
-                || (playerShipX > x && playerShipX < x + length)) {
+        if ((playerShipX + playerShipLength > x
+                && playerShipX + playerShipLength < x + width)
+                || (playerShipX > x && playerShipX < x + width)) {
             // A 1 in 500 chance to shoot
-            randomNum = generator.nextInt(150);
-            if (randomNum == 0) {
+
+            if (generator.nextInt(150) == 0) {
                 return true;
             }
         }
         // if firing randomly (not near the player) a 1 in 5000 chance)
-        randomNum = generator.nextInt(2000);
-        if (randomNum == 0) {
-            return true;
-        }
-        return false;
+        return generator.nextInt(2000) == 0;
     }
 }

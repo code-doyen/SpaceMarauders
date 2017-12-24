@@ -8,7 +8,7 @@ import android.widget.TextView;
 
 public class HighScoreActivity extends AppCompatActivity {
 
-    TextView textView,textView2,textView3,textView4;
+    TextView textView1,textView2,textView3,textView4;
 
     SharedPreferences sharedPreferences;
 
@@ -18,7 +18,7 @@ public class HighScoreActivity extends AppCompatActivity {
         setContentView(R.layout.activity_high_score);
 
         //initializing the textViews
-        textView = (TextView) findViewById(R.id.textView);
+        textView1 = (TextView) findViewById(R.id.textView1);
         textView2 = (TextView) findViewById(R.id.textView2);
         textView3 = (TextView) findViewById(R.id.textView3);
         textView4 = (TextView) findViewById(R.id.textView4);
@@ -26,11 +26,11 @@ public class HighScoreActivity extends AppCompatActivity {
         sharedPreferences  = getSharedPreferences("SHAR_PREF_NAME", Context.MODE_PRIVATE);
 
         //setting the values to the textViews
-        textView.setText("1."+sharedPreferences.getInt("score1",0));
-        textView2.setText("2."+sharedPreferences.getInt("score2",0));
-        textView3.setText("3."+sharedPreferences.getInt("score3",0));
-        textView4.setText("4."+sharedPreferences.getInt("score4",0));
-
+        textView1.setText("1. "+sharedPreferences.getString("scoreName1","DBV")+" "+sharedPreferences.getInt("score1",0));
+        textView2.setText("2. "+sharedPreferences.getString("scoreName2","MAV")+" "+sharedPreferences.getInt("score2",0));
+        textView3.setText("3. "+sharedPreferences.getString("scoreName3","HMV")+" "+sharedPreferences.getInt("score3",0));
+        textView4.setText("4. "+sharedPreferences.getString("scoreName4","BLV")+" "+sharedPreferences.getInt("score4",0));
 
     }
+
 }

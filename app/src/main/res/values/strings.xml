@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Space Marauders!</string>
+    <string name="app_name">Space Marauders</string>
+    <string name="edit_key">Enter initials</string>
+    <string name="button_send">Save</string>
 </resources>

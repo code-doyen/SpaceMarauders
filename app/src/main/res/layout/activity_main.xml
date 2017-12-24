@@ -7,23 +7,25 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:background="@drawable/splash"
+    android:background="@drawable/galaxiespiral"
     tools:context="com.oomph.spacemarauders.MainActivity">
 
     <ImageButton
         android:id="@+id/buttonPlay"
-        android:background="@drawable/playnow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/buttonScore"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/playnow"
+        android:soundEffectsEnabled="true" />
 
     <ImageButton
         android:id="@+id/buttonScore"
-        android:background="@drawable/highscore"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/highscore"
+        android:soundEffectsEnabled="true" />
 
 </RelativeLayout>
