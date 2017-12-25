@@ -3,6 +3,7 @@ package com.oomph.spacemarauders;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -15,7 +16,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageButton buttonPlay;
     //high score button
     private ImageButton buttonScore;
-
+    static MediaPlayer titleSound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +36,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonPlay.setOnClickListener(this);
 
         //setting the on click listener to high score button
-        buttonScore.setOnClickListener(this);
+        buttonScore.setOnClickListener(this);//initializing the media players for the game sounds
+
+        //initializing the media players for the game sounds
+        titleSound = MediaPlayer.create(this, R.raw.skyfiretitlescreen);
+        //loop game soundtrack
+        titleSound.setLooping(true);
+        //starting the game music as the game starts
+        titleSound.start();
 
     }
 
@@ -43,11 +51,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
 
         if (v == buttonPlay) {
+            titleSound.stop();
             //the transition from MainActivity to GameActivity
             startActivity(new Intent(MainActivity.this, GameActivity.class));
         }
         if (v == buttonScore) {
-
+            titleSound.stop();
             //the transition from MainActivity to HighScore activity
             startActivity(new Intent(MainActivity.this, HighScoreActivity.class));
         }
@@ -62,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
 
-                        //GameView.stopMusic();
+                        titleSound.stop();
                         Intent startMain = new Intent(Intent.ACTION_MAIN);
                         startMain.addCategory(Intent.CATEGORY_HOME);
                         startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

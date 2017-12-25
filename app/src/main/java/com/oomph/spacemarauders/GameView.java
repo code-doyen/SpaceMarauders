@@ -121,8 +121,9 @@ public class GameView extends SurfaceView implements Runnable {
     SharedPreferences sharedPreferences;
 
     //the mediaplayer objects to configure the background music
-    static MediaPlayer gameOnsound;
+    static MediaPlayer level1Sound;
     final MediaPlayer killedEnemySound;
+    final MediaPlayer playerKilledSound;
     final MediaPlayer gameOverSound;
     final MediaPlayer shootSound;
     final MediaPlayer damageShelterSound;
@@ -228,10 +229,11 @@ public class GameView extends SurfaceView implements Runnable {
         isHighScore = false;
 
         //initializing the media players for the game sounds
-        gameOnsound = MediaPlayer.create(context, R.raw.gameon);
+        level1Sound = MediaPlayer.create(context, R.raw.battleinthestars);
         killedEnemySound = MediaPlayer.create(context, R.raw.killedenemy);
-        gameOverSound = MediaPlayer.create(context, R.raw.gameover);
-        shootSound = MediaPlayer.create(context, R.raw.shoot);
+        playerKilledSound = MediaPlayer.create(context, R.raw.playerexplode);
+        gameOverSound = MediaPlayer.create(context, R.raw.gameovertune);
+        shootSound = MediaPlayer.create(context, R.raw.playershot);
         damageShelterSound = MediaPlayer.create(context, R.raw.damageshelter);
         uhSound = MediaPlayer.create(context, R.raw.uh);
         ohSound = MediaPlayer.create(context, R.raw.oh);
@@ -307,7 +309,7 @@ public class GameView extends SurfaceView implements Runnable {
                         boom.setCoordinates(player.getX(), player.getY());
                         boom.setVisible();
                         //will play a sound at the collision between player and the enemy
-                        gameOverSound.start();
+                        playerKilledSound.start();
                         lives--;
                     }
                     // soundPool.play(playerExplodeID, 1, 1, 0, 0, 1);
@@ -441,6 +443,8 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void endGame() {
+        level1Sound.stop();
+        gameOverSound.start();
         bullet.setInactive();
         for (Bullet be : enemiesBullets) {
             be.setInactive();
@@ -615,7 +619,7 @@ public class GameView extends SurfaceView implements Runnable {
     public void pause() {
         //when the game is paused
         //setting the variable to false
-        gameOnsound.pause();
+        level1Sound.pause();
         gameRunning = false;
         try {
             //stopping the thread
@@ -627,9 +631,9 @@ public class GameView extends SurfaceView implements Runnable {
 
     public void resume() {
         //loop game soundtrack
-        gameOnsound.setLooping(true);
+        level1Sound.setLooping(true);
         //starting the game music as the game starts
-        gameOnsound.start();
+        level1Sound.start();
         //when the game is resumed
         //starting the thread again
         gameRunning = true;
@@ -668,13 +672,14 @@ public class GameView extends SurfaceView implements Runnable {
         //if the game's over, tappin on game Over screen sends you to MainActivity
         if (isGameOver) {
             if (isHighScore) {
+                gameOverSound.stop();
                 Intent saveIntent = new Intent(context, SaveScoreActivity.class);
                 saveIntent.putExtra(EXTRA_MESSAGE, nameScorePos);
                 context.startActivity(saveIntent);
 
             }
             if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                gameOnsound.stop();
+                gameOverSound.stop();
                 context.startActivity(new Intent(context, MainActivity.class));
 
             }
