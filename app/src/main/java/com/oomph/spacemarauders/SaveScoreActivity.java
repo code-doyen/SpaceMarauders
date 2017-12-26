@@ -12,7 +12,7 @@ import android.view.View;
 public class SaveScoreActivity extends AppCompatActivity {
 
     SharedPreferences sharedPreferences;
-    static MediaPlayer bravePilotsSound;
+    private MediaPlayer bravePilotsSound;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +40,6 @@ public class SaveScoreActivity extends AppCompatActivity {
         e.apply();
 
         //return to Main home screen
-        startActivity(new Intent(this, MainActivity.class));
+        startActivity(new Intent(this, HighScoreActivity.class));
     }
 }

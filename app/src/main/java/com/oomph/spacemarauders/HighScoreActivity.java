@@ -45,7 +45,11 @@ public class HighScoreActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         bravePilotsSound.stop();
-        startActivity(new Intent(this, MainActivity.class));
+       // startActivity(new Intent(this, MainActivity.class));
+        startActivity(new Intent(this, MainActivity.class)
+                .addCategory(Intent.CATEGORY_HOME)
+                .setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+        finish();
     }
 
 }

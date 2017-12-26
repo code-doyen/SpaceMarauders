@@ -669,25 +669,23 @@ public class GameView extends SurfaceView implements Runnable {
                 }
                 break;
         }
-        //if the game's over, tappin on game Over screen sends you to MainActivity
+        //if the game's over, tapping on game Over screen sends you to MainActivity
         if (isGameOver) {
-            if (isHighScore) {
-                gameOverSound.stop();
-                Intent saveIntent = new Intent(context, SaveScoreActivity.class);
-                saveIntent.putExtra(EXTRA_MESSAGE, nameScorePos);
-                context.startActivity(saveIntent);
+            if (isHighScore && !gameOverSound.isPlaying()) {
+                context.startActivity(new Intent(context, SaveScoreActivity.class).putExtra(EXTRA_MESSAGE, nameScorePos));
 
             }
-            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                gameOverSound.stop();
+            else if (motionEvent.getAction() == MotionEvent.ACTION_DOWN && !gameOverSound.isPlaying()) {
                 context.startActivity(new Intent(context, MainActivity.class));
 
             }
+            else Log.i(getClass().getName(), " Failed to load intent and start activity");
 
         }
 
         return true;
 
     }
+
 
 }
