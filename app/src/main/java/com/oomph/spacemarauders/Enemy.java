@@ -51,6 +51,7 @@ public class Enemy {
 
     //has enemy been destroyed
     private boolean isVisible;
+    private boolean isDestroyed;
 
     //creating a rect object
     private RectF detectCollision;
@@ -62,7 +63,7 @@ public class Enemy {
         width = screenX/20;
         height = screenY/20;
         isVisible = true;
-
+        isDestroyed = false;
         int padding =20;
         x = column * (width+padding);
         y = row * (height + padding) +51;
@@ -162,19 +163,25 @@ public class Enemy {
         return y;
     }
 
-
     public void setInvisible(){
         isVisible = false;
     }
+
     public Boolean isVisible(){
         return isVisible;
     }
 
-    public float getLength(){
-        return width;
+    public int getLength(){
+        return bitmap.getHeight();
     }
-    public int getHeight() {
-        return height;
+    public int getWidth(){
+        return bitmap.getWidth();
+    }
+    public float getCenterX(){
+        return x + bitmap.getWidth() /2;
+    }
+    public float getCenterY(){
+        return y + bitmap.getHeight() /2;
     }
 
     public boolean takeAim(float playerShipX, float playerShipLength) {
@@ -190,5 +197,12 @@ public class Enemy {
         }
         // if firing randomly (not near the player) a 1 in 5000 chance)
         return generator.nextInt(2000) == 0;
+    }
+
+    public boolean isDestroyed() {
+        return isDestroyed;
+    }
+    public void setDestroyed() {
+        isDestroyed = !isDestroyed ;
     }
 }

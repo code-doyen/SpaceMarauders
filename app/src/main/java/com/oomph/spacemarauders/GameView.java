@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 public class GameView extends SurfaceView implements Runnable {
     public static final String EXTRA_MESSAGE = "com.oomph.spacemarauders.MESSAGE";
-    private int nameScorePos;
+
     //context to be used in onTouchEvent to cause the activity transition from GameActivity to MainActivity.
     Context context;
 
@@ -35,7 +35,7 @@ public class GameView extends SurfaceView implements Runnable {
     private Thread gameThread = null;
 
     //adding the player to this class
-    private Player player;
+    protected Player player;
 
     //These objects will be used for drawing
     private Paint paint;
@@ -70,7 +70,9 @@ public class GameView extends SurfaceView implements Runnable {
     private ArrayList<Stars> stars = new ArrayList<>();
 
     //defining a boom object to display blast
-    private Explosion boom;
+    private Explosion shipBoom;
+    private Explosion enemyBoom;
+    private Explosion brickBoom;
 
     //a screenX/Y holder
     int screenX;
@@ -113,13 +115,6 @@ public class GameView extends SurfaceView implements Runnable {
     private long spawnStartTime;
     private long spawnLapsedTime;
 
-    //the high Scores Holder
-    int highScore[] = new int[4];
-    String highScoreNames[] = new String[4];
-    boolean isHighScore;
-    //Shared Prefernces to store the High Scores
-    SharedPreferences sharedPreferences;
-
     //the mediaplayer objects to configure the background music
     static MediaPlayer level1Sound;
     final MediaPlayer killedEnemySound;
@@ -143,10 +138,10 @@ public class GameView extends SurfaceView implements Runnable {
         player = new Player(context, screenX, screenY);
 
         // Prepare the players bullet
-        bullet = new Bullet(context, screenX, screenY);
+        bullet = new Bullet(context, screenX, screenY, R.drawable.bulletblue);
         // Initialize the enemiesBullets array
         for (int i = 0; i < enemiesBullets.length; i++) {
-            enemiesBullets[i] = new Bullet(context, screenX, screenY);
+            enemiesBullets[i] = new Bullet(context, screenX, screenY, R.drawable.bulletdown);
         }
         //initializing enemy object array
         enemies = new Enemy[enemyCount];
@@ -183,8 +178,9 @@ public class GameView extends SurfaceView implements Runnable {
         menaceInterval = 1999;
 
         //initializing boom object
-        boom = new Explosion(context, screenX, screenY);
-
+        shipBoom = new Explosion(context, screenX, screenY, R.drawable.spaceshipexplosionsheet);
+        enemyBoom = new Explosion(context, screenX, screenY,R.drawable.enemyexplosionsheet);
+        brickBoom = new Explosion(context, screenX, screenY,R.drawable.brickexplosionsheet);
         //initializing the Friend class object
         //friend = new Friend(context, screenX, screenY);
 
@@ -201,7 +197,7 @@ public class GameView extends SurfaceView implements Runnable {
 
         //initialize lives
         lives = 3;
-        imgLives = BitmapFactory.decodeResource(context.getResources(), R.drawable.mship1);
+        imgLives = BitmapFactory.decodeResource(context.getResources(), R.drawable.mainship);
         //stretch the bitmap to a size appropriate for the screen resolution
         imgLives = Bitmap.createScaledBitmap(imgLives, screenX/30, screenY/30,false);
 
@@ -213,20 +209,6 @@ public class GameView extends SurfaceView implements Runnable {
 
         //setting the score to 0 initially
         score = 0;
-
-        //load high score sna names from file system
-        sharedPreferences = context.getSharedPreferences("SHAR_PREF_NAME", Context.MODE_PRIVATE);
-
-        //initializing the array high scores with the previous values
-        highScore[0] = sharedPreferences.getInt("score1", 0);
-        highScore[1] = sharedPreferences.getInt("score2", 0);
-        highScore[2] = sharedPreferences.getInt("score3", 0);
-        highScore[3] = sharedPreferences.getInt("score4", 0);
-        highScoreNames[0] = sharedPreferences.getString("scoreName1", "DBV");
-        highScoreNames[1] = sharedPreferences.getString("scoreName2", "MAV");
-        highScoreNames[2] = sharedPreferences.getString("scoreName3", "HMV");
-        highScoreNames[3] = sharedPreferences.getString("scoreName4", "BLV");
-        isHighScore = false;
 
         //initializing the media players for the game sounds
         level1Sound = MediaPlayer.create(context, R.raw.battleinthestars);
@@ -306,8 +288,8 @@ public class GameView extends SurfaceView implements Runnable {
                     if(!lifeLost && !isGameOver) {
                         be.setInactive();
                         //displaying boom at that location
-                        boom.setCoordinates(player.getX(), player.getY());
-                        boom.setVisible();
+                        shipBoom.setCoordinates(player.getX(), player.getY());
+                        //shipBoom.setVisible();
                         //will play a sound at the collision between player and the enemy
                         playerKilledSound.start();
                         lives--;
@@ -334,8 +316,9 @@ public class GameView extends SurfaceView implements Runnable {
                     be.setInactive();
                     br.setInvisible();
                     //displaying boom at that location
-                    boom.setCoordinates(be.getX(), be.getY());
-                    boom.setVisible();
+                    brickBoom.setCoordinates(br.getX(), br.getY());
+                    br.setDestroyed();
+
                     damageShelterSound.start();
                     //soundPool.play(damageShelterID, 1, 1, 0, 0, 1);
                 }
@@ -348,8 +331,9 @@ public class GameView extends SurfaceView implements Runnable {
                         bullet.setInactive();
                         br.setInvisible();
                         //displaying boom at that location
-                        boom.setCoordinates(bullet.getX(), bullet.getY());
-                        boom.setVisible();
+                        brickBoom.setCoordinates(br.getX(), br.getY());
+                        br.setDestroyed();
+                        //brickBoom.setVisible();
                         damageShelterSound.start();
                         //soundPool.play(damageShelterID, 1, 1, 0, 0, 1);
                     }
@@ -373,8 +357,9 @@ public class GameView extends SurfaceView implements Runnable {
                     if (RectF.intersects(bullet.getDetectCollision(), es.getDetectCollision())) {
                         es.setInvisible();
                         //displaying boom at that location
-                        boom.setCoordinates(es.getX(), es.getY());
-                        boom.setVisible();
+                        enemyBoom.setCoordinates(es.getX(), es.getY());
+                        es.setDestroyed();
+
                         //will play a sound at the collision between player and the enemy
                         killedEnemySound.start();
                         //  soundPool.play(invaderExplodeID, 1, 1, 0, 0, 1);
@@ -396,7 +381,7 @@ public class GameView extends SurfaceView implements Runnable {
                 //attempt a shot
                 if (!lifeLost && es.takeAim(player.getX(), player.getLength())) {
                     //try to spawn bullet
-                    if (enemiesBullets[nextBullet].shoot(es.getX() + (es.getLength() / 2) - (bullet.getLength() / 2), es.getY(), bullet.DOWN)) {
+                    if (enemiesBullets[nextBullet].shoot(es.getCenterX() - bullet.getCenterX(), es.getCenterY(), bullet.DOWN)) {
                         //Shot fired, prepare next shot
                         nextBullet++;
                         //loop back to the first one if we have reached the last
@@ -452,32 +437,6 @@ public class GameView extends SurfaceView implements Runnable {
         for (Enemy es : enemies) {
             es.setInvisible();
         }
-        //Assigning the scores to the highscore integer array
-        for (int j = 0; j < highScore.length; j++) {
-            int temp;
-            String nemp;
-            if (highScore[j] < score) {
-                temp = highScore[j];
-                nemp = highScoreNames[j];
-                highScore[j] = score;
-                score = temp;
-                if (!isHighScore) {
-                    nameScorePos = j;
-                    isHighScore = true;
-                    highScoreNames[j] = "";
-                } else highScoreNames[j] = nemp;
-
-            }
-        }
-
-        //storing the scores through shared Preferences
-        SharedPreferences.Editor e = sharedPreferences.edit();
-        for (int k = 0; k < highScore.length; k++) {
-            int j = k + 1;
-            e.putString("scoreName" + j, highScoreNames[k]);
-            e.putInt("score" + j, highScore[k]);
-        }
-        e.apply();
     }
 
     private void prepareLevel() {
@@ -540,15 +499,50 @@ public class GameView extends SurfaceView implements Runnable {
                 }
             }
 
-            //drawing boom image
-            if (boom.isVisible()) {
-                canvas.drawBitmap(
-                        boom.getBitmap(),
-                        boom.getX(),
-                        boom.getY(),
-                        paint
-                );
-                boom.setVisible();
+            //drawing explosions
+//            if (shipBoom.isBooming()) {
+//                canvas.drawBitmap(
+//                        shipBoom.getBitmap(),
+//                        shipBoom.getX(),
+//                        shipBoom.getY(),
+//                        paint
+//                );
+//            }
+//            if (enemyBoom.isBooming()) {
+//                canvas.drawBitmap(
+//                        enemyBoom.getBitmap(),
+//                        enemyBoom.getX(),
+//                        enemyBoom.getY(),
+//                        paint
+//                );
+//            }
+            for (Enemy es : enemies){
+                if ((es.isDestroyed() && !enemyBoom.isDestroying())) {
+                    es.setDestroyed();
+                    enemyBoom.setDestroying();
+                }
+                if(enemyBoom.isDestroying()){
+                    canvas.drawBitmap(
+                            enemyBoom.getBitmap(),
+                            enemyBoom.getX(),
+                            enemyBoom.getY(),
+                            paint
+                    );
+                }
+            }
+            for (DefenceBrick br : bricks){
+                if ((br.isDestroyed() && !brickBoom.isDestroying())) {
+                    br.setDestroyed();
+                    brickBoom.setDestroying();
+                }
+                if(brickBoom.isDestroying()){
+                    canvas.drawBitmap(
+                            brickBoom.getBitmap(),
+                            brickBoom.getX(),
+                            brickBoom.getY(),
+                            paint
+                    );
+                }
             }
             //drawing friends image
 //            canvas.drawBitmap(
@@ -590,6 +584,7 @@ public class GameView extends SurfaceView implements Runnable {
                 for (Bullet be : enemiesBullets) {
                     be.setInactive();
                 }
+                player.stopAccelerometer();
                 paint.setTextSize(150);
                 paint.setTextAlign(Paint.Align.CENTER);
                 canvas.drawText("READY", canvas.getWidth() / 2, yPos, paint);
@@ -597,6 +592,7 @@ public class GameView extends SurfaceView implements Runnable {
                 spawnLapsedTime = System.currentTimeMillis();
                 if (spawnLapsedTime - spawnStartTime > 5000) {
                     player = new Player(context, screenX, screenY);
+                    player.startAccelerometer();
                     lifeLost = false;
                 }
 
@@ -663,7 +659,7 @@ public class GameView extends SurfaceView implements Runnable {
 
                 Log.i(getClass().getName(), "Loc: "+String.valueOf(motionEvent.getX()));
                 //player's shot(s) fired
-                if (!lifeLost && !isGameOver && bullet.shoot(player.getX() + (player.getLength() / 2) - (bullet.getLength() / 2), player.getY(), bullet.UP)) {
+                if (!lifeLost && !isGameOver && bullet.shoot(player.getCenterX() - bullet.getCenterX(), player.getCenterY(), bullet.UP)) {
                     //  soundPool.play(shootID, 1, 1, 0, 0, 1);
                     shootSound.start();
                 }
@@ -671,8 +667,8 @@ public class GameView extends SurfaceView implements Runnable {
         }
         //if the game's over, tapping on game Over screen sends you to MainActivity
         if (isGameOver) {
-            if (isHighScore && !gameOverSound.isPlaying()) {
-                context.startActivity(new Intent(context, SaveScoreActivity.class).putExtra(EXTRA_MESSAGE, nameScorePos));
+            if (!gameOverSound.isPlaying()) {
+                context.startActivity(new Intent(context, SaveScoreActivity.class).putExtra(EXTRA_MESSAGE, score));
 
             }
             else if (motionEvent.getAction() == MotionEvent.ACTION_DOWN && !gameOverSound.isPlaying()) {

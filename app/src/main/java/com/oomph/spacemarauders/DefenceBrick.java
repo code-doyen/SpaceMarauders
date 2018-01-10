@@ -13,6 +13,7 @@ public class DefenceBrick {
     private RectF detectCollision;
     private Bitmap bitmap;
     private boolean isVisible;
+    private boolean isDestroyed;
     //x and y coordinates
     private float x;
     private float y;
@@ -22,6 +23,7 @@ public class DefenceBrick {
         width = screenX / 50;
         height = screenY / 25;
         isVisible = true;
+        isDestroyed = false;
         //sometimes a bullet slips through this padding
         //setting padding to zero if this annoys you
         int brickPadding =5;
@@ -36,6 +38,7 @@ public class DefenceBrick {
         //stretch the bitmap to a size appropriate for the screen resolution
         bitmap = Bitmap.createScaledBitmap(bitmap, width, height,false);
         //detectCollision = new RectF(x, y, bitmap.getWidth(), bitmap.getHeight());
+
         detectCollision = new RectF(
                 column * (width + brickPadding) + (shelterPadding *shelterNumber)+shelterPadding +(shelterPadding * shelterNumber),
                 row * (height + brickPadding) - brickPadding + startHeight,
@@ -51,6 +54,12 @@ public class DefenceBrick {
     public boolean isVisible(){
         return isVisible;
     }
+    public void setDestroyed(){
+        isDestroyed = !isDestroyed;
+    }
+    public boolean isDestroyed(){
+        return isDestroyed;
+    }
     public Bitmap getBitmap() {
         return bitmap;
     }
@@ -60,4 +69,5 @@ public class DefenceBrick {
     public float getY() {
         return y;
     }
+
 }

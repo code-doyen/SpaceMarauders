@@ -4,13 +4,17 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.RectF;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener2;
+import android.hardware.SensorManager;
 import android.util.Log;
 
 /**
  * Created by david on 9/18/2017.
  */
 
-public class Player {
+public class Player implements SensorEventListener2 {
     //Bitmap to get character from image
     private Bitmap bitmap;
 
@@ -49,6 +53,10 @@ public class Player {
     //creating a rect object
     private RectF detectCollision;
 
+    //accelerometer vars
+    private float xAccel, yAccel;
+    private SensorManager sensorManager;
+
     //constructor
     public Player(Context context, int screenX, int screenY) {
         //scales the ship
@@ -61,7 +69,7 @@ public class Player {
 
 
         //Getting bitmap from drawable resource
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.mship1);
+        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.mainship);
         //stretch the bitmap to a size appropriate for the screen resolution
         bitmap = Bitmap.createScaledBitmap(bitmap, width, height,false);
 
@@ -77,7 +85,8 @@ public class Player {
 
         //initializing rect object
         detectCollision = new RectF(x, y, x+ bitmap.getWidth(), y + bitmap.getHeight());
-
+        //accelerometer
+        sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
     }
 
     //setting boosting true
@@ -96,10 +105,11 @@ public class Player {
             speed -= 5;
         }
         else {
+            speed += yAccel;
             if(speed < 0)
-                speed += 5;
+                speed += 1;
             else if(speed >0)
-                speed -= 5;
+                speed -= 1;
             else
                 speed = 0;
         }
@@ -118,7 +128,7 @@ public class Player {
 
         //moving the ship across
         // vf = vi + at
-        Log.i(getClass().getName(), "Speed: "+String.valueOf(speed));
+
         x += 0.5f*(speed * GRAVITY)/fps;
 
         //but controlling it also so that it won't go off the screen
@@ -166,7 +176,41 @@ public class Player {
     }
 
     public int getLength(){
-        return width;
+        return bitmap.getHeight();
     }
 
+    public float getCenterX(){
+        return x + bitmap.getWidth() /2;
+    }
+    public float getCenterY(){
+        return y - bitmap.getHeight() /2;
+    }
+
+    protected void startAccelerometer() {
+        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
+    }
+
+
+    protected void stopAccelerometer() {
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    public void onFlushCompleted(Sensor sensor) {
+
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            xAccel = event.values[0];
+            yAccel = event.values[1];
+            Log.i(getClass().getName(), "yAccel: "+String.valueOf(yAccel));
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 }

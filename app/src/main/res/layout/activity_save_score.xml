@@ -5,16 +5,42 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
-    android:paddingTop="150dp"
+    android:paddingTop="75dp"
     android:orientation="vertical"
     android:background="@drawable/spaceorbital"
     tools:context="com.oomph.spacemarauders.SaveScoreActivity">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="5dp"
+        android:background="@drawable/highscore"
+        android:contentDescription="@string/high_score"
+        android:scaleType="center" />
+
+    <TextView
+        android:id="@+id/scoreView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/imageView"
+        android:layout_alignStart="@+id/imageView"
+        android:layout_below="@+id/imageView"
+        android:layout_marginBottom="5dp"
+        android:shadowColor="@android:color/background_dark"
+        android:text="@string/new_score"
+        android:textAlignment="center"
+        android:textColor="?attr/colorBackgroundFloating"
+        android:textSize="30sp"
+        android:textStyle="bold" />
 
     <EditText
         android:id="@+id/editInitials"
         android:layout_width="125dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_alignStart="@+id/scoreView"
+        android:layout_below="@+id/scoreView"
         android:ems="10"
         android:hint="@string/edit_key"
         android:maxLength="3"
@@ -26,10 +52,16 @@
         android:id="@+id/saveButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/editInitials"
         android:layout_alignBottom="@+id/editInitials"
-        android:layout_marginStart="11dp"
+        android:layout_alignEnd="@+id/imageView"
+        android:layout_marginStart="15dp"
         android:layout_toEndOf="@+id/editInitials"
+        android:fadingEdge="horizontal|vertical"
+        android:focusableInTouchMode="false"
         android:onClick="saveMessage"
         android:soundEffectsEnabled="true"
         android:text="@string/button_send" />
+
+
 </RelativeLayout>

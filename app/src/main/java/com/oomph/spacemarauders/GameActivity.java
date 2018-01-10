@@ -37,14 +37,18 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        gameView.player.stopAccelerometer();
         gameView.pause();
+        gameView.level1Sound.pause();
     }
 
     //running the game when activity is resumed
     @Override
     protected void onResume() {
         super.onResume();
+        gameView.player.startAccelerometer();
         gameView.resume();
+        gameView.level1Sound.start();
     }
 
     @Override

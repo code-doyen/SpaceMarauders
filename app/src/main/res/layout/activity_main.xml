@@ -10,22 +10,48 @@
     android:background="@drawable/galaxiespiral"
     tools:context="com.oomph.spacemarauders.MainActivity">
 
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/buttonPlay"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/title"
+        android:contentDescription="@string/app_name"
+        android:scaleType="center" />
+
     <ImageButton
         android:id="@+id/buttonPlay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/buttonScore"
-        android:layout_centerHorizontal="true"
+        android:layout_alignStart="@+id/buttonScore"
+        android:layout_marginBottom="10dp"
         android:background="@drawable/playnow"
+        android:contentDescription="Starts game"
+        android:hapticFeedbackEnabled="true"
         android:soundEffectsEnabled="true" />
 
     <ImageButton
         android:id="@+id/buttonScore"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/buttonOption"
+        android:layout_alignStart="@+id/buttonOption"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/highscore"
+        android:hapticFeedbackEnabled="true"
+        android:soundEffectsEnabled="true" />
+
+    <ImageButton
+        android:id="@+id/buttonOption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/highscore"
+        android:background="@drawable/options"
+        android:hapticFeedbackEnabled="true"
         android:soundEffectsEnabled="true" />
 
 </RelativeLayout>

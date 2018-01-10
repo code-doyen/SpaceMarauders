@@ -88,5 +88,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         alert.show();
 
     }
+    //pausing the game when activity is paused
+    @Override
+    protected void onPause() {
+        super.onPause();
+        titleSound.pause();
+    }
+
+    //running the game when activity is resumed
+    @Override
+    protected void onResume() {
+        super.onResume();
+        titleSound.start();
+    }
 
 }

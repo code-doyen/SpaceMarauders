@@ -28,7 +28,7 @@ public class Friend {
     private Rect detectCollision;
 
     public Friend(Context context, int screenX, int screenY) {
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.friend);
+        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.supership);
         maxX = screenX;
         maxY = screenY;
         minX = 0;
