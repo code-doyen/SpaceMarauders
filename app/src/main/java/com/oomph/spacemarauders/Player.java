@@ -182,6 +182,7 @@ public class Player implements SensorEventListener2 {
     public float getCenterX(){
         return x + bitmap.getWidth() /2;
     }
+
     public float getCenterY(){
         return y - bitmap.getHeight() /2;
     }

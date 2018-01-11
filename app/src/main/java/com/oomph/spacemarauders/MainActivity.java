@@ -7,24 +7,32 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, Animation.AnimationListener {
 
     //image button
     private ImageButton buttonPlay;
     //high score button
     private ImageButton buttonScore;
+    //high score button
+    private ImageButton buttonOption;
+    //media player object
     static MediaPlayer titleSound;
+    // Animation
+    Animation animBlink,animBounce, animWobble;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //setting the orientation to landscape
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        //setting the orientation to sensor landscape
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 
         //getting the button
         buttonPlay = (ImageButton) findViewById(R.id.buttonPlay);
@@ -32,19 +40,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //initializing the highscore button
         buttonScore = (ImageButton) findViewById(R.id.buttonScore);
 
+        //initializing the option button
+        buttonOption = (ImageButton) findViewById(R.id.buttonOption);
+
         //adding a click listener
         buttonPlay.setOnClickListener(this);
 
-        //setting the on click listener to high score button
-        buttonScore.setOnClickListener(this);//initializing the media players for the game sounds
+        //setting a on click listener to high score button
+        buttonScore.setOnClickListener(this);
 
-        //initializing the media players for the game sounds
-        titleSound = MediaPlayer.create(this, R.raw.skyfiretitlescreen);
-        //loop game soundtrack
-        titleSound.setLooping(true);
-        //starting the game music as the game starts
-        titleSound.start();
+        //setting a on click listener to option button
+        buttonOption.setOnClickListener(this);
 
+        // load the animation
+        animBlink = AnimationUtils.loadAnimation(getApplicationContext(),
+                R.anim.blink);
+        animBounce = AnimationUtils.loadAnimation(getApplicationContext(),
+                R.anim.bounce);
+        animWobble = AnimationUtils.loadAnimation(getApplicationContext(),
+                R.anim.wobble);
+
+        // set animation listener
+        animBlink.setAnimationListener(this);
+        buttonPlay.startAnimation(animBlink);
+        animBounce.setAnimationListener(this);
+        buttonScore.startAnimation(animBounce);
+        animWobble.setAnimationListener(this);
+        buttonOption.startAnimation(animWobble);
     }
 
     @Override
@@ -99,7 +121,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
+        //initializing the media players for the game sounds
+        titleSound = MediaPlayer.create(this, R.raw.skyfiretitlescreen);
+
+        //loop game soundtrack
+        titleSound.setLooping(true);
+
+        //starting the game music as the game starts
         titleSound.start();
     }
 
+    @Override
+    public void onAnimationStart(Animation animation) {
+
+    }
+
+    @Override
+    public void onAnimationEnd(Animation animation) {
+// Take any action after completing the animation
+
+        // check for blink animation
+        if (animation == animBlink) {
+        }
+        // check for bounce in animation
+        if (animation == animBounce) {
+        }
+        // check for wobble in animation
+        if (animation == animWobble) {
+        }
+
+    }
+
+    @Override
+    public void onAnimationRepeat(Animation animation) {
+
+    }
 }
